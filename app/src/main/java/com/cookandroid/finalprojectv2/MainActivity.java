@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        editText = findViewById(R.id.edit);
-        textView = findViewById(R.id.textview);
+        editText = findViewById(R.id.edtInput);
+        textView = findViewById(R.id.edtGpt);
     }
 
     public void gptSend(View view) {
