@@ -7,48 +7,73 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-
+import com.cookandroid.finalprojectv2.ChatMessage;
+import com.cookandroid.finalprojectv2.ChatAdapter;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.w3c.dom.Text;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
     private EditText editText;
-    private TextView textView;
-    private String anser1;
-    @SuppressLint("MissingInflatedId")
+    private RecyclerView recyclerView;
+    private ChatAdapter chatAdapter;
+    private List<ChatMessage> chatMessages;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        // RecyclerView 초기화
+        recyclerView = findViewById(R.id.recGpt);
+        chatMessages = new ArrayList<>();
+        chatAdapter = new ChatAdapter(chatMessages);
         editText = findViewById(R.id.edtInput);
-        textView = findViewById(R.id.edtGpt);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(chatAdapter);
     }
 
     public void gptSend(View view) {
-        if(editText.getText().toString().isEmpty())
+        if (editText.getText().toString().isEmpty()) {
             return;
-        String string = editText.getText().toString();
-        fetchQuestion(string, new GPTCategoryFetcher.CategoryCallback() {
-                    @Override
-                    public void onCategoryFetched(String answer) {
-                        runOnUiThread(() -> {
-                            textView.setText(answer);
-                            editText.setText("");
-                        });
-                    }
+        }
+
+        // 사용자의 입력 추가
+        String userMessage = editText.getText().toString();
+        chatMessages.add(new ChatMessage(userMessage, true)); // true: 사용자 메시지
+        chatAdapter.notifyItemInserted(chatMessages.size() - 1);
+
+        // RecyclerView 자동 스크롤
+        recyclerView.scrollToPosition(chatMessages.size() - 1);
+
+        // GPT 응답 처리
+        fetchQuestion(userMessage, new GPTCategoryFetcher.CategoryCallback() {
+            @Override
+            public void onCategoryFetched(String gptAnswer) {
+                runOnUiThread(() -> {
+                    // GPT 응답 추가
+                    chatMessages.add(new ChatMessage(gptAnswer, false)); // false: GPT 메시지
+                    chatAdapter.notifyItemInserted(chatMessages.size() - 1);
+
+                    // RecyclerView 자동 스크롤
+                    recyclerView.scrollToPosition(chatMessages.size() - 1);
                 });
-                editText.setText("");  //UI 작업은 CategoryCallback (Callback)을 통해서 하면 코딩 규칙 위반
-        textView.setText("GPT가 질문을 작성하는 중입니다.");
+            }
+        });
+
+        // 입력 필드 초기화
+        editText.setText("");
     }
 }
