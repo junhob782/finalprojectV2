@@ -1,0 +1,21 @@
+{
+  "player": {
+    "name": "Hero",
+    "health": 100,
+    "attack": 15,
+    "defense": 5,
+    "inventory": []
+  },
+  "currentStage": 1,
+  "progress": {
+    "stage_1": {
+      "encountersCompleted": [101, 102]
+    },
+    "stage_2": {
+      "encountersCompleted": [201, 202]
+    },
+    "stage_3": {
+      "encountersCompleted": [301]
+    }
+  }
+}
