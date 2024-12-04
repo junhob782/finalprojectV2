@@ -42,6 +42,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         }
     }
 
+
+
     @Override
     public int getItemCount() {
         return chatMessages.size();
@@ -57,4 +59,5 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
             gptMessage = itemView.findViewById(R.id.gptMessage);
         }
     }
+
 }

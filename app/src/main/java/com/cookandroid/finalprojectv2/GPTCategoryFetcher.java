@@ -27,7 +27,7 @@ public class GPTCategoryFetcher {
             messages.put(message);
 
 
-            jsonBody.put("model", "gpt-3.5-turbo");
+            jsonBody.put("model", "gpt-4o");
             jsonBody.put("messages", messages);  // messages 배열 추가
             jsonBody.put("max_tokens", 50);
             jsonBody.put("temperature", 0.7);
@@ -82,9 +82,8 @@ public class GPTCategoryFetcher {
                     }
                 }
             });
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d("GPTCategoryFetcher","애시당초 gpt한테 보내는 것조차 못함");
+        }  catch (JSONException e) {
+            Log.e("GPTCategoryFetcher", "JSON Parsing Error", e);
             callback.onCategoryFetched("정보 없음");
         }
     }
