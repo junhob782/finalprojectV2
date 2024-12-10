@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -39,12 +40,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // RecyclerView 초기화
-        recyclerView = findViewById(R.id.recGpt);
-        chatMessages = new ArrayList<>();
-        chatAdapter = new ChatAdapter(chatMessages);
-        editText = findViewById(R.id.edtInput);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(chatAdapter);
+        recyclerView = findViewById(R.id.recGpt); // RecyclerView 참조
+        editText = findViewById(R.id.edtInput);  // EditText 참조
+        chatMessages = new ArrayList<>();        // 데이터 리스트 초기화
+        chatAdapter = new ChatAdapter(chatMessages); // 어댑터 초기화
+
+        // RecyclerView 설정
+        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // 레이아웃 매니저 설정
+        recyclerView.setAdapter(chatAdapter); // 어댑터 연결
 
         // GameProgressManager 초기화
         progressManager = new GameProgressManager(this);
@@ -79,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 // 진행 상황을 성공적으로 로드했음을 알림
                 Toast.makeText(this, "저장된 게임을 불러옵니다: " + gameProgress, Toast.LENGTH_SHORT).show();
 
-                // 다음 액티비티로 이동
+                // Intent를 통해 GameManager로 데이터 전달
                 Intent intent = new Intent(this, GameManager.class);
                 intent.putExtra("gameProgress", gameProgress);
                 intent.putExtra("playerHealth", playerHealth);
@@ -111,7 +114,13 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle("게임을 이어하시겠습니까?")
                         .setMessage("이전에 저장된 진행 상황: " + gameProgress)
                         .setPositiveButton("Y (이어하기)", (dialog, which) -> {
-                            Toast.makeText(this, "게임을 이어합니다: " + gameProgress, Toast.LENGTH_SHORT).show();
+                            // Intent를 통해 GameManager로 데이터 전달
+                            Intent intent = new Intent(this, GameManager.class);
+                            intent.putExtra("gameProgress", gameProgress);
+                            intent.putExtra("playerHealth", playerHealth);
+                            intent.putExtra("playerAttack", playerAttack);
+                            intent.putExtra("playerDefense", playerDefense);
+                            startActivity(intent);
                         })
                         .setNegativeButton("N (새 게임 시작)", (dialog, which) -> {
                             progressManager.clearProgress(); // 저장된 진행 상황 초기화
@@ -137,38 +146,6 @@ public class MainActivity extends AppCompatActivity {
         playerDefense = 5;
     }
 
-    public void gptSend(View view) {
-        if (editText.getText().toString().isEmpty()) {
-            return;
-        }
-
-        // 사용자의 입력 추가
-        String userMessage = editText.getText().toString();
-        chatMessages.add(new ChatMessage(userMessage, true)); // true: 사용자 메시지
-        chatAdapter.notifyItemInserted(chatMessages.size() - 1);
-
-        // RecyclerView 자동 스크롤
-        recyclerView.scrollToPosition(chatMessages.size() - 1);
-
-        // GPT 응답 처리
-        fetchQuestion(userMessage, new GPTCategoryFetcher.CategoryCallback() {
-            @Override
-            public void onCategoryFetched(String gptAnswer) {
-                runOnUiThread(() -> {
-                    // GPT 응답 추가
-                    chatMessages.add(new ChatMessage(gptAnswer, false)); // false: GPT 메시지
-                    chatAdapter.notifyItemInserted(chatMessages.size() - 1);
-
-                    // RecyclerView 자동 스크롤
-                    recyclerView.scrollToPosition(chatMessages.size() - 1);
-                });
-            }
-        });
-
-        // 입력 필드 초기화
-        editText.setText("");
-    }
-
     public void saveProgress(View view) {
         // 현재 진행 상황 저장
         JSONObject progress = new JSONObject();
@@ -183,12 +160,5 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public void nextLevel(View view) {
-        // 게임 진행 상황 업데이트
-        int currentLevel = Integer.parseInt(gameProgress.split(" ")[1]);
-        gameProgress = "Level " + (currentLevel + 1);
-        Toast.makeText(this, "다음 레벨로 이동합니다: " + gameProgress, Toast.LENGTH_SHORT).show();
     }
 }
